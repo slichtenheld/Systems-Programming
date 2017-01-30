@@ -36,6 +36,6 @@ int main(int argc, char *argv[])
      }
 
    /* Last thing that main() should do */
-   /* causes main thread to block and be kept alive to support the threads it created unitl they all are done
+   /* causes main thread to block and be kept alive to support the threads it created unitl they all are done */
    pthread_exit(NULL); /* NECESSARY!!!, otherwise main thread will end, and other threads will never be run*/
 }
