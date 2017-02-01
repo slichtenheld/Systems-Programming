@@ -3,12 +3,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/syscall.h>
+#define gettid() syscall(SYS_gettid)
 
-#define BufferSize 5
+#define BUFFERSIZE 5
 
 /* global variables, is this the best way? */
 pthread_mutex_t mtx; // declare global mutex
 pthread_cond_t prodCond,consCond ; //declare global conditions
+pthread_cond_t termCond; // termination condition
 
 int counter = 0;
 #define COUNTMAX 20
@@ -19,8 +24,9 @@ struct circularBuffer{
 	int in;
 	int out;
 	int numItems;
-	int buffer[BufferSize];
+	int buffer[];
 }; 
+
 
 void * producer(void * arg) {
 	struct circularBuffer *circbuf = (struct circularBuffer*) arg;
@@ -29,24 +35,23 @@ void * producer(void * arg) {
 		pthread_mutex_lock(&mtx); // acquire lock
 
 		/* give up lock if buffer is full and wait to be woken up */
-		while ( circbuf->numItems >= BufferSize ) // while loop because thread could be woken up due to other conditions
+		while ( circbuf->numItems == BUFFERSIZE ) // while loop because thread could be woken up due to other conditions
 			pthread_cond_wait(&prodCond,&mtx);
 
-		printf("adding %d to buffer, in: %d, numItems: %d\n", counter,circbuf->in,circbuf->numItems);
+		printf("THREAD %ld: adding %d to buffer, in: %d, numItems: %d\n", gettid(), counter,circbuf->in,circbuf->numItems);
 		circbuf->buffer[circbuf->in] = counter++;
-		circbuf->in  = (circbuf->in + 1) % BufferSize;
+		circbuf->in  = (circbuf->in + 1) % BUFFERSIZE;
 		circbuf->numItems++;
 
-		if (circbuf->numItems >= 1) 
+		/*** OPTIMIZATION: CONSUMER WILL ONLY BE SLEEPING IF BUFFER WAS EMPTY, AND BUFFER JUST GOT INCREMENTED BY 1 ***/
+	 	if (circbuf->numItems == 1) 
 			pthread_cond_signal(&consCond);
-
-		if (counter > COUNTMAX) {
-			pthread_mutex_unlock(&mtx);
-			pthread_exit(NULL);
-		}
 
 		pthread_mutex_unlock(&mtx);
 
+		if (counter > COUNTMAX) 
+			raise(SIGTERM);
+		
 	}
 }
 
@@ -57,20 +62,16 @@ void * consumer(void * arg) {
 		pthread_mutex_lock(&mtx); // acquire lock
 
 		/* give up lock if buffer is full and wait to be woken up */
-		while ( circbuf->numItems <= 0 ) // while loop because thread could be woken up due to other conditions
+		while ( circbuf->numItems == 0 ) // while loop because thread could be woken up due to other conditions
 			pthread_cond_wait(&consCond,&mtx);
 
-		printf("Removing %d from buffer\n",circbuf->buffer[circbuf->out] );
-		circbuf->out = (circbuf->out + 1) % BufferSize;
+		printf("THREAD %ld: Removing %d from buffer\n", gettid(),circbuf->buffer[circbuf->out] );
+		circbuf->out = (circbuf->out + 1) % BUFFERSIZE;
 		circbuf->numItems --;
 
-		if (circbuf->numItems <= BufferSize) 
+		/*** OPTIMIZATION: PRODUCER WILL ONlY BE SLEEPING IF BUFFER WAS FULL, AND NUMITEMS JUST GOT DECREMENTED BY 1 ***/ 
+		if (circbuf->numItems == BUFFERSIZE - 1) 
 			pthread_cond_signal(&prodCond);
-
-		if (counter > COUNTMAX) {
-			pthread_mutex_unlock(&mtx);
-			pthread_exit(NULL);
-		}
 
 		pthread_mutex_unlock(&mtx);
 	}
@@ -81,7 +82,7 @@ void * consumer(void * arg) {
 
 int main (int argc, char* argv[]) {
 
-	/*
+	
 	if (argc != 2) {
 		perror("ERROR: ./program <size of buffer>");
 		exit(-1);
@@ -90,12 +91,14 @@ int main (int argc, char* argv[]) {
 	char *endptr;
 	int bufferlength = strtol(argv[1],&endptr,10);
 
+	struct circularBuffer *cBuf = malloc(sizeof(struct circularBuffer) + bufferlength * sizeof(int)); 
+
 	printf("Buffer is of size %d\n", bufferlength );
-	*/
+	
 
 
 	/*make sure to initialize buffer*/
-	struct circularBuffer cBuf = {0,0,0,{0,0,0,0,0}}; 
+	
 	/* declare threads, init mutex, and init condition */
 	pthread_t prodThread[PRODTHREADS],consThread[CONSTHREADS]; 
 	pthread_mutex_init(&mtx, NULL); 
@@ -104,20 +107,24 @@ int main (int argc, char* argv[]) {
 
 	for (int i = 0; i < PRODTHREADS; i++){
 		printf("Creating producer[%d] thread\n",i);
-		if ( pthread_create( &prodThread[i],NULL,producer,(void*)&cBuf ) ) { 
+		if ( pthread_create( &prodThread[i],NULL,producer,(void*)cBuf ) ) { 
 			perror("error creating producer thread");
 			exit(-1);
 		}
 	}
 	for (int i = 0; i < CONSTHREADS; i++){
 		printf("Creating consumer[%d] thread\n",i);
-		if ( pthread_create( &consThread[i],NULL,consumer,(void*)&cBuf ) ) { 
+		if ( pthread_create( &consThread[i],NULL,consumer,(void*)cBuf ) ) { 
 			perror("error creating consumer thread");
 			exit(-1);
 		}
 	}
+
+	//pthread_cond_wait(&consCond,&mtx);
+
 	/* wait for all threads to terminate, destroy mutex and condition */
 	pthread_exit(NULL); 
+	free(cBuf);
 	pthread_mutex_destroy(&mtx);
 	pthread_cond_destroy(&prodCond);
 	pthread_cond_destroy(&consCond);
