@@ -6,6 +6,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/syscall.h>
+#include "calendarADT.h"
+
 #define gettid() syscall(SYS_gettid)
 
 
@@ -32,7 +34,7 @@ void printCalendarEvent(struct calendarEvent_t c){
 }
 
 void printCalEvDebug(struct calendarEvent_t c){
-	printf("Type: %c, Title: %s, Date: %s, Time: %s, location: %s\n\n",c.type, c.title, c.date, c.time, c.location);
+	printf("Type: %c, Title: %s, Date: %s, Time: %s, location: %s\n",c.type, c.title, c.date, c.time, c.location);
 }
 
 
@@ -45,6 +47,13 @@ struct circularBuffer{
 }; 
 
 int parseEmail(char * buffer, struct calendarEvent_t *c);
+
+
+//read in line from stdin, returns -1 if misread input
+int readInput(char** buffer);
+
+//parse input and return event, returns C, D, X or NULL
+char parseInput(char *buffer, struct CalendarItem_t *c);
 
 void * producer(void * arg) {
 
@@ -59,7 +68,8 @@ void * producer(void * arg) {
 	struct calendarEvent_t	c; // reusable struct for calendarevents
 
 	while(1) {
-		
+		printf("THREAD P: %ld\n", gettid() );
+
 		/* take in input from stdin */
 		char charsRead = getline(&buffer,&len,stdin);
 		int parsed = 0;
@@ -69,8 +79,6 @@ void * producer(void * arg) {
 			parsed = parseEmail(buffer, &c); 
 		else 
 			c.type = 'E'; // poison pill still needs to be sent before can exit thread
-
-		printCalEvDebug(c);
 
 		/* Buffer written to here */
 		if (charsRead == -1 || parsed != -1) {	
@@ -108,23 +116,36 @@ void * consumer(void * arg) {
 
 	/* loop until poison pill received */
 	while(1) { 
+		printf("THREAD C: %ld\n", gettid() );
 
+		/* CRITICAL SECTION */
 		pthread_mutex_lock(&mtx); // acquire lock
+		{
+			/* give up lock if buffer is full and wait to be woken up */
+			while ( circbuf->numItems == 0 ) // while loop because thread could be woken up due to other conditions
+				pthread_cond_wait(&consCond,&mtx);
 
-		/* give up lock if buffer is full and wait to be woken up */
-		while ( circbuf->numItems == 0 ) // while loop because thread could be woken up due to other conditions
-			pthread_cond_wait(&consCond,&mtx);
+			if (circbuf->buffer[circbuf->out].type == 'E') {
+				break; //TODO: remove from critical section
+				pthread_mutex_unlock(&mtx);
+			}
 
-		printf("THREAD %ld: Removing from buffer\n", gettid() );
-		circbuf->out = (circbuf->out + 1) % circbuf->size;
-		circbuf->numItems --;
+			printCalEvDebug(circbuf->buffer[circbuf->out]);
+			//struct CalendarItem_t *c = malloc(sizeof *c);
+			circbuf->out = (circbuf->out + 1) % circbuf->size;
+			circbuf->numItems --;
 
-		/*** OPTIMIZATION: PRODUCER WILL ONlY BE SLEEPING IF BUFFER WAS FULL, AND NUMITEMS JUST GOT DECREMENTED BY 1 ***/ 
-		if (circbuf->numItems == circbuf->size - 1) 
-			pthread_cond_signal(&prodCond);
-
+			/*** OPTIMIZATION: PRODUCER WILL ONlY BE SLEEPING IF BUFFER WAS FULL, AND NUMITEMS JUST GOT DECREMENTED BY 1 ***/ 
+			if (circbuf->numItems == circbuf->size - 1) 
+				pthread_cond_signal(&prodCond);
+		}
 		pthread_mutex_unlock(&mtx);
+		/* END CRITICAL SECTION */
+
+		//if 
+
 	}
+	pthread_exit(NULL);
 }
 
 
@@ -164,13 +185,13 @@ int main (int argc, char* argv[]) {
 			exit(-1);
 		}
 	}
-	// for (int i = 0; i < CONSTHREADS; i++){
-	// 	printf("Creating consumer[%d] thread\n",i);
-	// 	if ( pthread_create( &consThread[i],NULL,consumer,(void*)cBuf ) ) { 
-	// 		perror("error creating consumer thread");
-	// 		exit(-1);
-	// 	}
-	// }
+	for (int i = 0; i < CONSTHREADS; i++){
+		printf("Creating consumer[%d] thread\n",i);
+		if ( pthread_create( &consThread[i],NULL,consumer,(void*)cBuf ) ) { 
+			perror("error creating consumer thread");
+			exit(-1);
+		}
+	}
 
 	//pthread_cond_wait(&consCond,&mtx);
 
@@ -181,6 +202,8 @@ int main (int argc, char* argv[]) {
 	pthread_cond_destroy(&prodCond);
 	pthread_cond_destroy(&consCond);
 }
+
+/***************************************************************************/
 
 int parseEmail(char * buffer, struct calendarEvent_t *c){ // returns -1 if doesn't have everything
 	char *pch = strtok (buffer," ");
@@ -203,4 +226,29 @@ int parseEmail(char * buffer, struct calendarEvent_t *c){ // returns -1 if doesn
 
 	if (counter != 6) return -1;
 	return 0;
+}
+
+int readInput(char** buffer){
+	long unsigned int len; // length of buffer
+	return getline(buffer,&len,stdin);
+}
+
+char parseInput(char *buffer, struct CalendarItem_t *c){
+	char temp;
+	char *pch = strtok (buffer," ,");
+	unsigned int counter = 0;
+  		while (pch != NULL){
+		    switch(++counter) {
+		    	case 1: temp = pch[0]; break;
+		    	case 2: memcpy(c->title,pch, strlen(pch)+1); break;
+		    	case 3: memcpy(c->date,pch, strlen(pch)+1); break;
+		    	case 4: memcpy(c->time,pch, strlen(pch)+1); break;
+		    	case 5: memcpy(c->location,pch, strlen(pch)+1); break;
+		    	//case 6: printf("Case 6 triggered\n"); break;
+		    	//default: perror("error parseinput");
+		    }
+		    pch = strtok (NULL, " ,");
+		}
+	if (counter < 6) return 0;
+	return temp;
 }
