@@ -8,49 +8,20 @@
 #include <sys/syscall.h>
 #include "calendarADT.h"
 #include "macros.h"
+#include "emailThread.h"
+#include "circBuf.h"
+#include "mtxGlbl.h"
 
 #define gettid() syscall(SYS_gettid)
 
-// #ifdef DEBUG
-// # define DEBUG_PRINT(x) printf x
-// #else
-// # define DEBUG_PRINT(x) do {} while (0)
-// #endif
-
-
-
-/* global variables, is this the best way? */
-pthread_mutex_t mtx; // declare global mutex
-pthread_cond_t prodCond,consCond ; //declare global conditions
-pthread_cond_t termCond; // termination condition
-
-int counter = 0;
 #define COUNTMAX 20
 #define PRODTHREADS 1
 #define CONSTHREADS 1
 
-struct calendarEvent_t {
-	char type;
-	struct CalendarItem_t calItem;
-};
-
-
-void printCalEvDebug(struct calendarEvent_t c){
-	printf("Type: %c, Title: %s, Date: %s, Time: %s, location: %s\n",c.type, c.calItem.title, c.calItem.date, c.calItem.time, c.calItem.location);
-}
-
-struct circularBuffer{
-	int size;
-	int in;
-	int out;
-	int numItems;
-	struct calendarEvent_t buffer[];
-}; 
-
-int parseEmail(char * buffer, struct calendarEvent_t *c);
-
-//parse input and return event, returns C, D, X or NULL
-char parseCal(char *buffer, struct CalendarItem_t *c);
+/* global variables declared here*/
+pthread_mutex_t mtx; // declare global mutex
+pthread_cond_t prodCond,consCond ; //declare global conditions
+pthread_cond_t termCond; // termination condition
 
 void * producer(void * arg) {
 
@@ -79,7 +50,7 @@ void * producer(void * arg) {
 
 		/* Buffer written to here */
 		if (charsRead == -1 || parsed != -1) {	
-			/* CRITICAL SECTION BEGIN */
+			// CRITICAL SECTION BEGIN 
 			pthread_mutex_lock(&mtx); // acquire lock
 			{
 
@@ -204,45 +175,4 @@ int main (int argc, char* argv[]) {
 	pthread_mutex_destroy(&mtx);
 	pthread_cond_destroy(&prodCond);
 	pthread_cond_destroy(&consCond);
-}
-
-/***************************************************************************/
-
-int parseEmail(char * buffer, struct calendarEvent_t *c){ // returns -1 if doesn't have everything
-	char *pch = strtok (buffer," ");
-	unsigned int counter = 0;
-	while (pch != NULL){
-		
-	    switch(counter++) {
-	    	case 0: break; //do nothing, ignore "Subject:"
-	    	case 1: c->type = pch[0]; break;
-	    	case 2: memcpy(c->calItem.title,pch, strlen(pch)+1); break;
-	    	case 3: memcpy(c->calItem.date,pch, strlen(pch)+1); break;
-	    	case 4: memcpy(c->calItem.time,pch, strlen(pch)+1); break;
-	    	case 5: memcpy(c->calItem.location,pch, strlen(pch)-1); break;/* stupid fix for newline character */
-	    }
-	    pch = strtok (NULL, ",");
-	    
-	}
-
-	if (counter != 6) return -1;
-	return 0;
-}
-
-char parseCal(char *buffer, struct CalendarItem_t *c){
-	char temp;
-	char *pch = strtok (buffer," ,");
-	unsigned int counter = 0;
-  		while (pch != NULL){
-		    switch(++counter) {
-		    	case 1: temp = pch[0]; break;
-		    	case 2: memcpy(c->title,pch, strlen(pch)+1); break;
-		    	case 3: memcpy(c->date,pch, strlen(pch)+1); break;
-		    	case 4: memcpy(c->time,pch, strlen(pch)+1); break;
-		    	case 5: memcpy(c->location,pch, strlen(pch)+1); break;
-		    }
-		    pch = strtok (NULL, " ,");
-		}
-	if (counter < 6) return 0;
-	return temp;
 }
