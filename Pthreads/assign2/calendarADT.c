@@ -120,7 +120,7 @@ void Calendar_del(Calendar_T cal, CalendarItem_T item){
 			break;
 		}
 	}
-	cmp_delItem(cal,item);
+}
 
 void Calendar_mod(Calendar_T cal, CalendarItem_T item){
 	if (cal==NULL) perror("MOD, calendar is null");

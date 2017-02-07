@@ -49,10 +49,6 @@ struct circularBuffer{
 
 int parseEmail(char * buffer, struct calendarEvent_t *c);
 
-
-//read in line from stdin, returns -1 if misread input
-int readInput(char** buffer);
-
 //parse input and return event, returns C, D, X or NULL
 char parseCal(char *buffer, struct CalendarItem_t *c);
 
@@ -234,11 +230,6 @@ int parseEmail(char * buffer, struct calendarEvent_t *c){ // returns -1 if doesn
 
 	if (counter != 6) return -1;
 	return 0;
-}
-
-int readInput(char** buffer){
-	long unsigned int len; // length of buffer
-	return getline(buffer,&len,stdin);
 }
 
 char parseCal(char *buffer, struct CalendarItem_t *c){
