@@ -10,6 +10,12 @@
 
 #define gettid() syscall(SYS_gettid)
 
+#ifdef DEBUG
+# define DEBUG_PRINT(x) printf x
+#else
+# define DEBUG_PRINT(x) do {} while (0)
+#endif
+
 // TODO: convert print statements to debug statements
 
 
@@ -33,7 +39,6 @@ void printCalEvDebug(struct calendarEvent_t c){
 	printf("Type: %c, Title: %s, Date: %s, Time: %s, location: %s\n",c.type, c.calItem.title, c.calItem.date, c.calItem.time, c.calItem.location);
 }
 
-
 struct circularBuffer{
 	int size;
 	int in;
@@ -49,7 +54,7 @@ int parseEmail(char * buffer, struct calendarEvent_t *c);
 int readInput(char** buffer);
 
 //parse input and return event, returns C, D, X or NULL
-char parseInput(char *buffer, struct CalendarItem_t *c);
+char parseCal(char *buffer, struct CalendarItem_t *c);
 
 void * producer(void * arg) {
 
@@ -64,8 +69,9 @@ void * producer(void * arg) {
 	struct calendarEvent_t	c; // reusable struct for calendarevents
 
 	while(1) {
-		printf("THREAD P: %ld\n", gettid() );
-
+		#if DEBUG 
+			printf("THREAD P: %ld\n", gettid() );
+		#endif
 		/* take in input from stdin */
 		char charsRead = getline(&buffer,&len,stdin);
 		int parsed = 0;
@@ -110,11 +116,18 @@ void * producer(void * arg) {
 void * consumer(void * arg) {
 	struct circularBuffer *circbuf = (struct circularBuffer*) arg;
 
+	Calendar_T cal = Calendar_new();
+	char type;
+		
+
 	/* loop until poison pill received */
 	while(1) { 
-		printf("THREAD C: %ld\n", gettid() );
+		#if DEBUG
+			printf("THREAD C: %ld\n", gettid() );
+		#endif
 
-		struct CalendarItem_t *c = malloc(sizeof *c);
+		struct CalendarItem_t *item = malloc(sizeof *item);
+
 		/* CRITICAL SECTION */
 		pthread_mutex_lock(&mtx); // acquire lock
 		{
@@ -122,12 +135,9 @@ void * consumer(void * arg) {
 			while ( circbuf->numItems == 0 ) // while loop because thread could be woken up due to other conditions
 				pthread_cond_wait(&consCond,&mtx);
 
-			
-
-
-
-			printCalEvDebug(circbuf->buffer[circbuf->out]);
-			//struct CalendarItem_t *c = malloc(sizeof *c);
+			/* copy buffer item to local item */
+			memcpy( item, &(circbuf->buffer[circbuf->out].calItem), sizeof(struct CalendarItem_t) ); // copy struct to buffer
+			type = circbuf->buffer[circbuf->out].type;
 			circbuf->out = (circbuf->out + 1) % circbuf->size;
 			circbuf->numItems --;
 
@@ -137,24 +147,15 @@ void * consumer(void * arg) {
 		}
 		pthread_mutex_unlock(&mtx);
 		/* END CRITICAL SECTION */
-
-		if (circbuf->buffer[circbuf->out].type == 'E') {
-				pthread_mutex_unlock(&mtx);
-				break; //TODO: remove from critical section
+		
+		switch (type){
+			case 'E': pthread_exit(NULL); break;
+			case 'C': Calendar_add(cal, item);break;
+			case 'D': Calendar_del(cal, item);break;
+			case 'X': Calendar_mod(cal, item);break;
+			default : printf("incompatible calendarEvent type\n");
 		}
-		switch (circbuf->buffer[circbuf->out].type){
-				case 'E': break;
-				case 'C': break;
-				case 'D': break;
-				case 'X': break;
-				default : printf("incompatible calendarEvent type\n");
-
-			}
-
-		//if 
-
 	}
-	pthread_exit(NULL);
 }
 
 
@@ -222,12 +223,10 @@ int parseEmail(char * buffer, struct calendarEvent_t *c){ // returns -1 if doesn
 	    switch(counter++) {
 	    	case 0: break; //do nothing, ignore "Subject:"
 	    	case 1: c->type = pch[0]; break;
-	    	case 2: memcpy(c->title,pch, strlen(pch)+1); break;
-	    	case 3: memcpy(c->date,pch, strlen(pch)+1); break;
-	    	case 4: memcpy(c->time,pch, strlen(pch)+1); break;
-	    	case 5: 
-	    		memcpy(c->location,pch, strlen(pch)-1); /* stupid fix for newline character */
-	    		break;
+	    	case 2: memcpy(c->calItem.title,pch, strlen(pch)+1); break;
+	    	case 3: memcpy(c->calItem.date,pch, strlen(pch)+1); break;
+	    	case 4: memcpy(c->calItem.time,pch, strlen(pch)+1); break;
+	    	case 5: memcpy(c->calItem.location,pch, strlen(pch)-1); break;/* stupid fix for newline character */
 	    }
 	    pch = strtok (NULL, ",");
 	    
@@ -242,7 +241,7 @@ int readInput(char** buffer){
 	return getline(buffer,&len,stdin);
 }
 
-char parseInput(char *buffer, struct CalendarItem_t *c){
+char parseCal(char *buffer, struct CalendarItem_t *c){
 	char temp;
 	char *pch = strtok (buffer," ,");
 	unsigned int counter = 0;
@@ -253,8 +252,6 @@ char parseInput(char *buffer, struct CalendarItem_t *c){
 		    	case 3: memcpy(c->date,pch, strlen(pch)+1); break;
 		    	case 4: memcpy(c->time,pch, strlen(pch)+1); break;
 		    	case 5: memcpy(c->location,pch, strlen(pch)+1); break;
-		    	//case 6: printf("Case 6 triggered\n"); break;
-		    	//default: perror("error parseinput");
 		    }
 		    pch = strtok (NULL, " ,");
 		}
