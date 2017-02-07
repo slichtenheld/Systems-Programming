@@ -7,14 +7,15 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 #include "calendarADT.h"
+#include "macros.h"
 
 #define gettid() syscall(SYS_gettid)
 
-#ifdef DEBUG
-# define DEBUG_PRINT(x) printf x
-#else
-# define DEBUG_PRINT(x) do {} while (0)
-#endif
+// #ifdef DEBUG
+// # define DEBUG_PRINT(x) printf x
+// #else
+// # define DEBUG_PRINT(x) do {} while (0)
+// #endif
 
 
 
