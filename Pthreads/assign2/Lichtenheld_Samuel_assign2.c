@@ -16,7 +16,6 @@
 # define DEBUG_PRINT(x) do {} while (0)
 #endif
 
-// TODO: convert print statements to debug statements
 
 
 /* global variables, is this the best way? */
@@ -65,9 +64,8 @@ void * producer(void * arg) {
 	struct calendarEvent_t	c; // reusable struct for calendarevents
 
 	while(1) {
-		#if DEBUG 
-			printf("THREAD P: %ld\n", gettid() );
-		#endif
+		DEBUG_PRINT( ("THREAD P: %ld\n", gettid() ) );
+
 		/* take in input from stdin */
 		char charsRead = getline(&buffer,&len,stdin);
 		int parsed = 0;
@@ -118,9 +116,7 @@ void * consumer(void * arg) {
 
 	/* loop until poison pill received */
 	while(1) { 
-		#if DEBUG
-			printf("THREAD C: %ld\n", gettid() );
-		#endif
+		DEBUG_PRINT( ("THREAD C: %ld\n", gettid() ) );
 
 		struct CalendarItem_t *item = malloc(sizeof *item);
 
@@ -172,7 +168,7 @@ int main (int argc, char* argv[]) {
 
 	cBuf->size = bufferlength; //store size of buffer in struct so can be passed to threads 
 
-	printf("Buffer is of size %d\n", bufferlength );
+	DEBUG_PRINT( ("Buffer is of size %d\n", bufferlength ) );
 	
 
 
@@ -185,14 +181,14 @@ int main (int argc, char* argv[]) {
 	pthread_cond_init(&consCond, NULL);
 
 	for (int i = 0; i < PRODTHREADS; i++){
-		printf("Creating producer[%d] thread\n",i);
+		DEBUG_PRINT( ("Creating producer[%d] thread\n",i) );
 		if ( pthread_create( &prodThread[i],NULL,producer,(void*)cBuf ) ) { 
 			perror("error creating producer thread");
 			exit(-1);
 		}
 	}
 	for (int i = 0; i < CONSTHREADS; i++){
-		printf("Creating consumer[%d] thread\n",i);
+		DEBUG_PRINT( ("Creating consumer[%d] thread\n",i) );
 		if ( pthread_create( &consThread[i],NULL,consumer,(void*)cBuf ) ) { 
 			perror("error creating consumer thread");
 			exit(-1);
