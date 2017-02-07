@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"DEBU",
+				"DEBUG_PRINT"
+			],
+			[
 				"ca",
 				"calendarEvent"
 			],
@@ -71,16 +75,8 @@
 			"file": "Lichtenheld_Samuel_assign2.c",
 			"settings":
 			{
-				"buffer_size": 7429,
+				"buffer_size": 7332,
 				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/samuel/Documents/github/prelim1_ASP/finalTurnin/locationupdater.c",
-			"settings":
-			{
-				"buffer_size": 1978,
 				"line_ending": "Unix"
 			}
 		}
@@ -138,7 +134,7 @@
 	],
 	"find":
 	{
-		"height": 23.0
+		"height": 34.0
 	},
 	"find_in_files":
 	{
@@ -152,6 +148,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"parseInput",
 			"BUFFER",
 			"BufferSize",
 			"sin",
@@ -165,6 +162,7 @@
 		"regex": false,
 		"replace_history":
 		[
+			"parseCal",
 			"BUFFERSIZE",
 			"fd"
 		],
@@ -177,7 +175,7 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 0,
 			"sheets":
 			[
 				{
@@ -186,15 +184,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7429,
+						"buffer_size": 7332,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								529,
-								529
+								3300,
+								3300
 							]
 						],
 						"settings":
@@ -203,37 +201,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "/home/samuel/Documents/github/prelim1_ASP/finalTurnin/locationupdater.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1978,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1710.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -281,7 +249,7 @@
 	"project": "subl.sublime-project",
 	"replace":
 	{
-		"height": 42.0
+		"height": 62.0
 	},
 	"save_all_on_build": true,
 	"select_file":
