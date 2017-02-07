@@ -25,52 +25,6 @@ pthread_cond_t prodCond,consCond ; //declare global conditions
 pthread_cond_t termCond; // termination condition
 
 
-// void * consumer(void * arg) {
-// 	struct circularBuffer *circbuf = (struct circularBuffer*) arg;
-
-// 	Calendar_T cal = Calendar_new();
-// 	char type;
-		
-
-// 	/* loop until poison pill received */
-// 	while(1) { 
-// 		DEBUG_PRINT( ("THREAD C: %ld\n", gettid() ) );
-
-// 		struct CalendarItem_t *item = malloc(sizeof *item);
-
-// 		/* CRITICAL SECTION */
-// 		pthread_mutex_lock(&mtx); // acquire lock
-// 		{
-// 			/* give up lock if buffer is full and wait to be woken up */
-// 			while ( circbuf->numItems == 0 ) // while loop because thread could be woken up due to other conditions
-// 				pthread_cond_wait(&consCond,&mtx);
-
-// 			/* copy buffer item to local item */
-// 			memcpy( item, &(circbuf->buffer[circbuf->out].calItem), sizeof(struct CalendarItem_t) ); // copy struct to buffer
-// 			type = circbuf->buffer[circbuf->out].type;
-// 			circbuf->out = (circbuf->out + 1) % circbuf->size;
-// 			circbuf->numItems --;
-
-// 			/*** OPTIMIZATION: PRODUCER WILL ONlY BE SLEEPING IF BUFFER WAS FULL, AND NUMITEMS JUST GOT DECREMENTED BY 1 ***/ 
-// 			if (circbuf->numItems == circbuf->size - 1) 
-// 				pthread_cond_signal(&prodCond);
-// 		}
-// 		pthread_mutex_unlock(&mtx);
-// 		/* END CRITICAL SECTION */
-		
-// 		switch (type){
-// 			case 'E': pthread_exit(NULL); break;
-// 			case 'C': Calendar_add(cal, item);break;
-// 			case 'D': Calendar_del(cal, item);break;
-// 			case 'X': Calendar_mod(cal, item);break;
-// 			default : printf("incompatible calendarEvent type\n");
-// 		}
-// 	}
-// }
-
-
-/*****************************************************************/
-
 int main (int argc, char* argv[]) {
 
 	
@@ -82,15 +36,13 @@ int main (int argc, char* argv[]) {
 	char *endptr;
 	int bufferlength = strtol(argv[1],&endptr,10); // convert string from input to int
 
+	/*initialize buffer*/
 	struct circularBuffer *cBuf = malloc(sizeof(struct circularBuffer) + bufferlength * sizeof(struct calendarEvent_t));
 
 	cBuf->size = bufferlength; //store size of buffer in struct so can be passed to threads 
 
 	DEBUG_PRINT( ("Buffer is of size %d\n", bufferlength ) );
 	
-
-
-	/*make sure to initialize buffer*/
 	
 	/* declare threads, init mutex, and init condition */
 	pthread_t prodThread[PRODTHREADS],consThread[CONSTHREADS]; 
@@ -112,8 +64,6 @@ int main (int argc, char* argv[]) {
 			exit(-1);
 		}
 	}
-
-	//pthread_cond_wait(&consCond,&mtx);
 
 	/* wait for all threads to terminate, destroy mutex and condition */
 	pthread_exit(NULL); 

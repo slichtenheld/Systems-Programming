@@ -1,6 +1,6 @@
 
 objects = main.o calThread.o emailThread.o calendarADT.o
-
+alldependencies = macros.h emailThread.h calThread.h circBuf.h mtxGlbl.h calendarADT.h
 
 assign2Make : $(objects)
 	cc -o assign2Make $(objects) -pthread
@@ -9,24 +9,24 @@ debug: $(objects)
 	cc -o assign2Make $(objects) -pthread -D DEBUG
 
 zip:
-	zip Lichtenheld_Samuel_Assignment1.zip *.c *.h Makefile README.txt
+	zip Lichtenheld_Samuel_Assignment2.zip *.c *.h Makefile README.txt
 
 rmzip: 
-	rm Lichtenheld_Samuel_Assignment1.zip
+	rm Lichtenheld_Samuel_Assignment2.zip
 
 
 
 
-main.o : main.c macros.h emailThread.h calThread.h circBuf.h mtxGlbl.h
+main.o : main.c $(alldependencies)
 	cc -c main.c
 
-calThread.o : calThread.c calThread.h macros.h calendarADT.h mtxGlbl.h circBuf.h
+calThread.o : calThread.c $(alldependencies)
 	cc -c calThread.c
 
-emailThread.o : emailThread.c emailThread.h calendarADT.h macros.h mtxGlbl.h circBuf.h
+emailThread.o : emailThread.c $(alldependencies)
 	cc -c emailThread.c
 
-calendarADT.o : calendarADT.c calendarADT.h
+calendarADT.o : calendarADT.c $(alldependencies)
 	cc -c calendarADT.c
 
 clean:
