@@ -10,6 +10,8 @@
 
 #define gettid() syscall(SYS_gettid)
 
+// TODO: convert print statements to debug statements
+
 
 /* global variables, is this the best way? */
 pthread_mutex_t mtx; // declare global mutex
@@ -23,18 +25,12 @@ int counter = 0;
 
 struct calendarEvent_t {
 	char type;
-	char title[11]; // extra char for /0 characeter
-	char date[11];
-	char time[6];
-	char location[11];
+	struct CalendarItem_t calItem;
 };
 
-void printCalendarEvent(struct calendarEvent_t c){
-	printf("%c,%s,%s,%s,%s\n",c.type, c.title, c.date, c.time, c.location);
-}
 
 void printCalEvDebug(struct calendarEvent_t c){
-	printf("Type: %c, Title: %s, Date: %s, Time: %s, location: %s\n",c.type, c.title, c.date, c.time, c.location);
+	printf("Type: %c, Title: %s, Date: %s, Time: %s, location: %s\n",c.type, c.calItem.title, c.calItem.date, c.calItem.time, c.calItem.location);
 }
 
 
@@ -82,7 +78,7 @@ void * producer(void * arg) {
 
 		/* Buffer written to here */
 		if (charsRead == -1 || parsed != -1) {	
-			/* LOCK MUTEX */
+			/* CRITICAL SECTION BEGIN */
 			pthread_mutex_lock(&mtx); // acquire lock
 			{
 
@@ -100,8 +96,8 @@ void * producer(void * arg) {
 					pthread_cond_signal(&consCond);
 			
 			}
-			/* UNLOCK MUTEX */
 			pthread_mutex_unlock(&mtx);
+			/* CRITICAL SECTION END */
 		}
 		if (charsRead == -1)
 			break;
@@ -118,6 +114,7 @@ void * consumer(void * arg) {
 	while(1) { 
 		printf("THREAD C: %ld\n", gettid() );
 
+		struct CalendarItem_t *c = malloc(sizeof *c);
 		/* CRITICAL SECTION */
 		pthread_mutex_lock(&mtx); // acquire lock
 		{
@@ -125,10 +122,9 @@ void * consumer(void * arg) {
 			while ( circbuf->numItems == 0 ) // while loop because thread could be woken up due to other conditions
 				pthread_cond_wait(&consCond,&mtx);
 
-			if (circbuf->buffer[circbuf->out].type == 'E') {
-				break; //TODO: remove from critical section
-				pthread_mutex_unlock(&mtx);
-			}
+			
+
+
 
 			printCalEvDebug(circbuf->buffer[circbuf->out]);
 			//struct CalendarItem_t *c = malloc(sizeof *c);
@@ -141,6 +137,19 @@ void * consumer(void * arg) {
 		}
 		pthread_mutex_unlock(&mtx);
 		/* END CRITICAL SECTION */
+
+		if (circbuf->buffer[circbuf->out].type == 'E') {
+				pthread_mutex_unlock(&mtx);
+				break; //TODO: remove from critical section
+		}
+		switch (circbuf->buffer[circbuf->out].type){
+				case 'E': break;
+				case 'C': break;
+				case 'D': break;
+				case 'X': break;
+				default : printf("incompatible calendarEvent type\n");
+
+			}
 
 		//if 
 
