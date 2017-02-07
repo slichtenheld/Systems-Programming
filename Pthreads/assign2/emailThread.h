@@ -18,6 +18,6 @@ int parseEmail(char * buffer, struct calendarEvent_t *c);
 
 // /* reads in stdin, parses, places in buffer passed as struct*/
 // /* arg is of type (struct circularBuffer*) */
-//void * producer(void * arg);
+void * producer(void * arg);
 
 #endif

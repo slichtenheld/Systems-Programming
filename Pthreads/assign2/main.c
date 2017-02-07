@@ -9,6 +9,7 @@
 #include "calendarADT.h"
 #include "macros.h"
 #include "emailThread.h"
+#include "calThread.h"
 #include "circBuf.h"
 #include "mtxGlbl.h"
 
@@ -23,104 +24,49 @@ pthread_mutex_t mtx; // declare global mutex
 pthread_cond_t prodCond,consCond ; //declare global conditions
 pthread_cond_t termCond; // termination condition
 
-void * producer(void * arg) {
 
-	struct circularBuffer *circbuf = (struct circularBuffer*) arg;
+// void * consumer(void * arg) {
+// 	struct circularBuffer *circbuf = (struct circularBuffer*) arg;
 
-	/* initialize buffer for getline */
-	char *buffer = NULL; // getline will allocate space for buffer
-	int charsRead = 0;
-	long unsigned int len = 0; // length of buffer
-
-	/* initialize variables for parsing */
-	struct calendarEvent_t	c; // reusable struct for calendarevents
-
-	while(1) {
-		DEBUG_PRINT( ("THREAD P: %ld\n", gettid() ) );
-
-		/* take in input from stdin */
-		char charsRead = getline(&buffer,&len,stdin);
-		int parsed = 0;
-
-		/* if !EOF, parse input in buffer and put in struct => else set poison pill */
-		if ( charsRead != -1 )
-			parsed = parseEmail(buffer, &c); 
-		else 
-			c.type = 'E'; // poison pill still needs to be sent before can exit thread
-
-		/* Buffer written to here */
-		if (charsRead == -1 || parsed != -1) {	
-			// CRITICAL SECTION BEGIN 
-			pthread_mutex_lock(&mtx); // acquire lock
-			{
-
-				/* give up lock if buffer is full and wait to be woken up */
-				while ( circbuf->numItems == circbuf->size ) // while loop because thread could be woken up due to other conditions
-					pthread_cond_wait(&prodCond,&mtx);
-
-
-				memcpy( &(circbuf->buffer[circbuf->in]), &c, sizeof(struct calendarEvent_t) ); // copy struct to buffer
-				circbuf->in  = (circbuf->in + 1) % circbuf->size;
-				circbuf->numItems++;
-
-				/*** OPTIMIZATION: CONSUMER WILL ONLY BE SLEEPING IF BUFFER WAS EMPTY, AND BUFFER JUST GOT INCREMENTED BY 1 ***/
-			 	if (circbuf->numItems == 1) 
-					pthread_cond_signal(&consCond);
-			
-			}
-			pthread_mutex_unlock(&mtx);
-			/* CRITICAL SECTION END */
-		}
-		if (charsRead == -1)
-			break;
-	}
-	/* Cleanup */
-	free(buffer);
-	pthread_exit(NULL);
-}
-
-void * consumer(void * arg) {
-	struct circularBuffer *circbuf = (struct circularBuffer*) arg;
-
-	Calendar_T cal = Calendar_new();
-	char type;
+// 	Calendar_T cal = Calendar_new();
+// 	char type;
 		
 
-	/* loop until poison pill received */
-	while(1) { 
-		DEBUG_PRINT( ("THREAD C: %ld\n", gettid() ) );
+// 	/* loop until poison pill received */
+// 	while(1) { 
+// 		DEBUG_PRINT( ("THREAD C: %ld\n", gettid() ) );
 
-		struct CalendarItem_t *item = malloc(sizeof *item);
+// 		struct CalendarItem_t *item = malloc(sizeof *item);
 
-		/* CRITICAL SECTION */
-		pthread_mutex_lock(&mtx); // acquire lock
-		{
-			/* give up lock if buffer is full and wait to be woken up */
-			while ( circbuf->numItems == 0 ) // while loop because thread could be woken up due to other conditions
-				pthread_cond_wait(&consCond,&mtx);
+// 		/* CRITICAL SECTION */
+// 		pthread_mutex_lock(&mtx); // acquire lock
+// 		{
+// 			/* give up lock if buffer is full and wait to be woken up */
+// 			while ( circbuf->numItems == 0 ) // while loop because thread could be woken up due to other conditions
+// 				pthread_cond_wait(&consCond,&mtx);
 
-			/* copy buffer item to local item */
-			memcpy( item, &(circbuf->buffer[circbuf->out].calItem), sizeof(struct CalendarItem_t) ); // copy struct to buffer
-			type = circbuf->buffer[circbuf->out].type;
-			circbuf->out = (circbuf->out + 1) % circbuf->size;
-			circbuf->numItems --;
+// 			/* copy buffer item to local item */
+// 			memcpy( item, &(circbuf->buffer[circbuf->out].calItem), sizeof(struct CalendarItem_t) ); // copy struct to buffer
+// 			type = circbuf->buffer[circbuf->out].type;
+// 			circbuf->out = (circbuf->out + 1) % circbuf->size;
+// 			circbuf->numItems --;
 
-			/*** OPTIMIZATION: PRODUCER WILL ONlY BE SLEEPING IF BUFFER WAS FULL, AND NUMITEMS JUST GOT DECREMENTED BY 1 ***/ 
-			if (circbuf->numItems == circbuf->size - 1) 
-				pthread_cond_signal(&prodCond);
-		}
-		pthread_mutex_unlock(&mtx);
-		/* END CRITICAL SECTION */
+// 			/*** OPTIMIZATION: PRODUCER WILL ONlY BE SLEEPING IF BUFFER WAS FULL, AND NUMITEMS JUST GOT DECREMENTED BY 1 ***/ 
+// 			if (circbuf->numItems == circbuf->size - 1) 
+// 				pthread_cond_signal(&prodCond);
+// 		}
+// 		pthread_mutex_unlock(&mtx);
+// 		/* END CRITICAL SECTION */
 		
-		switch (type){
-			case 'E': pthread_exit(NULL); break;
-			case 'C': Calendar_add(cal, item);break;
-			case 'D': Calendar_del(cal, item);break;
-			case 'X': Calendar_mod(cal, item);break;
-			default : printf("incompatible calendarEvent type\n");
-		}
-	}
-}
+// 		switch (type){
+// 			case 'E': pthread_exit(NULL); break;
+// 			case 'C': Calendar_add(cal, item);break;
+// 			case 'D': Calendar_del(cal, item);break;
+// 			case 'X': Calendar_mod(cal, item);break;
+// 			default : printf("incompatible calendarEvent type\n");
+// 		}
+// 	}
+// }
 
 
 /*****************************************************************/
