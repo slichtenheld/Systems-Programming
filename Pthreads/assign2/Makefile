@@ -13,7 +13,7 @@ locationUpdater : $(OBJECTS)
 	$(CC) -o locationUpdater $(OBJECTS) -pthread
 
 zip:
-	zip Lichtenheld_Samuel_Assignment2.zip *.c *.h Makefile README.txt
+	zip Lichtenheld_Samuel_Assignment2.zip *.c *.h Makefile *.txt
 
 rmzip: 
 	rm Lichtenheld_Samuel_Assignment2.zip

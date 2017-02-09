@@ -11,4 +11,8 @@ both exit, the main thread does some clean up and then exits as well.
 Rather than having a giant main.c file, I split everything into separate files.
 Hopefully this makes it easier to understand my work as well. 
 
-I tested using the sample input provided. 
+I tested using the sample input provided. I got the same output regardless of 
+the size of buffer. 
+
+I also tested with my own input file. However, this led me to being unsure of
+some of the conditions where things should be printed to the screen.

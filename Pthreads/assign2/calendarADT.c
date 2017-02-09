@@ -75,20 +75,6 @@ int cmp_earliestItem(Calendar_T cal, CalendarItem_T item){ // only compares date
 	else return 0;
 }
 
-void cmp_delItem(Calendar_T cal, CalendarItem_T item){
-	uint boolean = 0;
-	for(int i = 0; i < cal->count; i++){
-		if ( 	
-				(strcmp((*(cal->data[i])).date,item->date)) == 0 &&
-				(strcmp((*(cal->data[i])).title,item->title) == 0)
-			) 
-			{ /* check if any of the dates exist already */
-			boolean = 1;
-			break;
-		}
-	}
-	if (boolean==0) printf("%s:None\n",item->date);
-}
 
 void Calendar_add(Calendar_T cal, CalendarItem_T item){
 
@@ -125,31 +111,22 @@ void Calendar_del(Calendar_T cal, CalendarItem_T item){
 			break;
 		}
 	}
-	cmp_delItem(cal,item);
+
+	if ( cmp_earliestItem(cal,item) ) { 	
+		printf("%s:None\n",item->date);
+	}
 }
 
 void Calendar_mod(Calendar_T cal, CalendarItem_T item){
 	if (cal==NULL) perror("MOD, calendar is null");
-	// check if anything is equal
-	// replace time and location
-	//print out "date:location"
-	int lowestTime = 1440;
-	int matchTime = 0;
-	for(int i = 0; i < cal->count; i++){
-		if (strcmp((*(cal->data[i])).title,item->title) == 0) { /*compares title and date */
 
-			if (time2int(item->time)<lowestTime) lowestTime = time2int(item->time);
-
-			if ( strcmp((*(cal->data[i])).time,item->time) == 0 ) {
-				memcpy(cal->data[i]->time,item->time, strlen(item->time)+1); // update time
-				memcpy(cal->data[i]->location,item->location, strlen(item->location)+1); // update location
-				memcpy(cal->data[i]->date,item->location, strlen(item->date)+1);
-				matchTime = time2int(item->time);
-			}
-		}
-	}
-	if (matchTime==lowestTime) {
+	if ( cmp_earliestItem(cal,item) ) { 	
 		printf("%s:%s\n",item->date,item->location);
+	}
+
+	for(int i = 0; i < cal->count; i++){
+		if ( strcmp((*(cal->data[i])).title,item->title) == 0 )
+			memcpy(cal->data[i],item, sizeof(struct CalendarItem_t));
 	}
 }
 
@@ -159,7 +136,6 @@ void Calendar_print(Calendar_T cal){
 	for (int i = 0; i < cal->count; i++){
 		print_calItem(*(cal->data[i]));
 	}
-
 }
 
 /****private methods****/
@@ -167,12 +143,38 @@ void print_calItem(struct CalendarItem_t c){
 	printf("Title: %s, Date: %s, Time: %s, location: %s\n\n", c.title, c.date, c.time, c.location);
 }
 
-int cmp_calItem(struct CalendarItem_t c, struct CalendarItem_t d){
-	if (strcmp(c.title,d.title) != 0 ||
-		strcmp(c.date,d.date)   != 0) {
-		return 0;
-	}
-	else return 1;
-}
 
 
+// void cmp_delItem(Calendar_T cal, CalendarItem_T item){
+// 	uint boolean = 0;
+// 	for(int i = 0; i < cal->count; i++){
+// 		if ( 	
+// 				(strcmp((*(cal->data[i])).date,item->date)) == 0 &&
+// 				(strcmp((*(cal->data[i])).title,item->title) == 0)
+// 			) 
+// 			{ /* check if any of the dates exist already */
+// 			boolean = 1;
+// 			break;
+// 		}
+// 	}
+// 	if (boolean==0) printf("%s:None\n",item->date);
+// }
+
+
+
+// mod function old algorithm from assign1
+	// int lowestTime = 1440;
+	// int matchTime = 0;
+	// for(int i = 0; i < cal->count; i++){
+	// 	if (strcmp((*(cal->data[i])).title,item->title) == 0) { /*compares title and date */
+
+	// 		if (time2int(item->time)<lowestTime) lowestTime = time2int(item->time);
+
+	// 		if ( strcmp((*(cal->data[i])).time,item->time) == 0 ) {
+	// 			memcpy(cal->data[i]->time,item->time, strlen(item->time)+1); // update time
+	// 			memcpy(cal->data[i]->location,item->location, strlen(item->location)+1); // update location
+	// 			memcpy(cal->data[i]->date,item->location, strlen(item->date)+1);
+	// 			matchTime = time2int(item->time);
+	// 		}
+	// 	}
+	// }

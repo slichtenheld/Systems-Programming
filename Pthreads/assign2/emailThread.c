@@ -49,7 +49,7 @@ void * producer(void * arg) {
 	struct calendarEvent_t	c; // reusable struct for calendarevents
 
 	while(1) {
-		DEBUG_PRINT( ("THREAD P: %ld\n", gettid() ) );
+		//DEBUG_PRINT( ("THREAD P: %ld\n", gettid() ) );
 
 		/* take in input from stdin */
 		char charsRead = getline(&buffer,&len,stdin);
@@ -63,7 +63,7 @@ void * producer(void * arg) {
 
 		/* Buffer written to here */
 		if (charsRead == -1 || parsed != -1) {	
-
+			DEBUG_PRINT( ("Type: %c, Title: %s, Date: %s, Time: %s, location: %s\n",c.type, c.calItem.title, c.calItem.date, c.calItem.time, c.calItem.location) );
 			/* CRITICAL SECTION BEGIN */ 
 			pthread_mutex_lock(&mtx); // acquire lock
 			{

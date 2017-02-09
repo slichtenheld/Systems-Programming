@@ -25,7 +25,7 @@ void * consumer(void * arg) {
 
 	/* loop until poison pill received */
 	while(1) { 
-		DEBUG_PRINT( ("THREAD C: %ld\n", gettid() ) );
+		//DEBUG_PRINT( ("THREAD C: %ld\n", gettid() ) );
 
 		struct CalendarItem_t *item = malloc(sizeof *item);
 
