@@ -1,12 +1,16 @@
 
-objects = main.o calThread.o emailThread.o calendarADT.o
-alldependencies = macros.h emailThread.h calThread.h circBuf.h mtxGlbl.h calendarADT.h
+CC = gcc
 
-assign2Make : $(objects)
-	cc -o assign2Make $(objects) -pthread
+OBJECTS = main.o calThread.o emailThread.o calendarADT.o
+DEPS = macros.h emailThread.h calThread.h circBuf.h mtxGlbl.h calendarADT.h
 
-debug: $(objects)
-	cc -o assign2Make $(objects) -pthread -D DEBUG
+all: assign2
+
+debug:	CC += -DDEBUG
+debug:	assign2
+
+assign2 : $(OBJECTS)
+	$(CC) -o assign2 $(OBJECTS) -pthread
 
 zip:
 	zip Lichtenheld_Samuel_Assignment2.zip *.c *.h Makefile README.txt
@@ -17,18 +21,18 @@ rmzip:
 
 
 
-main.o : main.c $(alldependencies)
-	cc -c main.c
+main.o : main.c $(DEPS)
+	$(CC) -c main.c
 
-calThread.o : calThread.c $(alldependencies)
-	cc -c calThread.c
+calThread.o : calThread.c $(DEPS)
+	$(CC) -c calThread.c
 
-emailThread.o : emailThread.c $(alldependencies)
-	cc -c emailThread.c
+emailThread.o : emailThread.c $(DEPS)
+	$(CC) -c emailThread.c
 
-calendarADT.o : calendarADT.c $(alldependencies)
-	cc -c calendarADT.c
+calendarADT.o : calendarADT.c $(DEPS)
+	$(CC) -c calendarADT.c
 
 clean:
-	rm assign2Make $(objects)
+	rm assign2 $(OBJECTS)
 

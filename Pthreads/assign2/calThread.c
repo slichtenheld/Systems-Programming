@@ -14,6 +14,8 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 
+#define gettid() syscall(SYS_gettid)
+
 void * consumer(void * arg) {
 	struct circularBuffer *circbuf = (struct circularBuffer*) arg;
 

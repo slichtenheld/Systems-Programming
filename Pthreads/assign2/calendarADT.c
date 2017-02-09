@@ -110,8 +110,8 @@ void Calendar_del(Calendar_T cal, CalendarItem_T item){
 
 	// check if anythings are equal, if it is shift everything up
 	for(int i = 0; i < cal->count; i++){
-		if (cmp_calItem(*(cal->data[i]), *item) &&
-			strcmp((*(cal->data[i])).date,item->date) == 0) 
+		if (cmp_calItem(*(cal->data[i]), *item) && // if title, date, and time are equal 
+			strcmp((*(cal->data[i])).time,item->time) == 0) 
 			{
 			for (;i < cal->count -1; i++){
 				cal->data[i] = cal->data[i + 1];
@@ -131,13 +131,14 @@ void Calendar_mod(Calendar_T cal, CalendarItem_T item){
 	int lowestTime = 1440;
 	int matchTime = 0;
 	for(int i = 0; i < cal->count; i++){
-		if (cmp_calItem(*(cal->data[i]), *item) ) {
+		if (strcmp((*(cal->data[i])).title,item->title) == 0) { /*compares title and date */
 
 			if (time2int(item->time)<lowestTime) lowestTime = time2int(item->time);
 
 			if ( strcmp((*(cal->data[i])).time,item->time) == 0 ) {
-				memcpy(cal->data[i]->time,item->time, strlen(item->time)+1);
-				memcpy(cal->data[i]->location,item->location, strlen(item->location)+1);
+				memcpy(cal->data[i]->time,item->time, strlen(item->time)+1); // update time
+				memcpy(cal->data[i]->location,item->location, strlen(item->location)+1); // update location
+				memcpy(cal->data[i]->date,item->location, strlen(item->date)+1);
 				matchTime = time2int(item->time);
 			}
 		}

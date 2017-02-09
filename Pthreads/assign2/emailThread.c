@@ -11,6 +11,8 @@
 #include "mtxGlbl.h"
 #include "circBuf.h"
 
+#define gettid() syscall(SYS_gettid)
+
 void printCalEvDebug(struct calendarEvent_t c){
 	printf("Type: %c, Title: %s, Date: %s, Time: %s, location: %s\n",c.type, c.calItem.title, c.calItem.date, c.calItem.time, c.calItem.location);
 }

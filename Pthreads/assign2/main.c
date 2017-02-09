@@ -13,8 +13,6 @@
 #include "circBuf.h"
 #include "mtxGlbl.h"
 
-#define gettid() syscall(SYS_gettid)
-
 #define COUNTMAX 20
 #define PRODTHREADS 1
 #define CONSTHREADS 1
