@@ -1,0 +1,14 @@
+Subject: C,Meeting1  ,01/12/2017,15:30,NEB200    
+Subject: C,Meeting2  ,01/12/2017,14:30,NEB201    
+Subject: C,Meeting3  ,01/12/2017,13:30,NEB202    
+Subject: C,Meeting4  ,01/12/2017,09:30,NEB203    
+Subject: C,Meeting5  ,01/13/2017,15:30,NEB204    
+Subject: C,Meeting7  ,01/13/2017,14:30,NEB206    
+Subject: C,Meeting8  ,01/19/2017,15:30,NEB207    
+Subject: X,Meeting2  ,01/12/2017,08:30,NEB201    
+Subject: X,Meeting8  ,01/19/2017,15:30,NEB20F    
+Subject: X,Meeting9  ,01/12/2017,07:30,NEB208    
+Subject: D,Meeting7  ,01/13/2017,14:30,NEB20E    
+Subject: D,Meeting8  ,01/19/2017,15:30,NEB20F    
+Subject: D,Meeting9  ,01/12/2017,07:30,NEB208   
+Subject: D,Meeting1  ,01/12/2017,15:30,NEB200 
