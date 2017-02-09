@@ -56,7 +56,7 @@ int time2int(char* charString){ // needs formate of HH:MM
 	return temp;
 }
 
-/* returns true if earliest item */
+/* returns true if earliest item on that day*/
 int cmp_earliestItem(Calendar_T cal, CalendarItem_T item){ // only compares date
 	uint boolean = 0;
 	int lowestTime = time2int(item->time); // initialized to highest value
@@ -106,14 +106,19 @@ void Calendar_add(Calendar_T cal, CalendarItem_T item){
 }
 
 void Calendar_del(Calendar_T cal, CalendarItem_T item){
-	if (cal==NULL) perror("DEL, calendar is null");
+	if (cal==NULL) {
+		perror("DEL, calendar is null");
+		return;
+	}
 
 	// check if anythings are equal, if it is shift everything up
 	for(int i = 0; i < cal->count; i++){
-		if (cmp_calItem(*(cal->data[i]), *item) && // if title, date, and time are equal 
+		if ( // if title, date, and time are equal => delete
+			strcmp((*(cal->data[i])).title,item->title) == 0 &&
+			strcmp((*(cal->data[i])).date,item->date) == 0 &&
 			strcmp((*(cal->data[i])).time,item->time) == 0) 
-			{
-			for (;i < cal->count -1; i++){
+		{
+			for (;i < cal->count -1; i++){ // since implemented as array, order can make a difference since comparing only name
 				cal->data[i] = cal->data[i + 1];
 			}
 			cal->count = cal->count - 1;

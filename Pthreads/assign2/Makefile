@@ -4,13 +4,13 @@ CC = gcc
 OBJECTS = main.o calThread.o emailThread.o calendarADT.o
 DEPS = macros.h emailThread.h calThread.h circBuf.h mtxGlbl.h calendarADT.h
 
-all: assign2
+all: locationUpdater
 
 debug:	CC += -DDEBUG
-debug:	assign2
+debug:	locationUpdater
 
-assign2 : $(OBJECTS)
-	$(CC) -o assign2 $(OBJECTS) -pthread
+locationUpdater : $(OBJECTS)
+	$(CC) -o locationUpdater $(OBJECTS) -pthread
 
 zip:
 	zip Lichtenheld_Samuel_Assignment2.zip *.c *.h Makefile README.txt
@@ -34,5 +34,5 @@ calendarADT.o : calendarADT.c $(DEPS)
 	$(CC) -c calendarADT.c
 
 clean:
-	rm assign2 $(OBJECTS)
+	rm locationUpdater $(OBJECTS)
 
