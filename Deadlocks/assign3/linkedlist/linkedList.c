@@ -1,8 +1,9 @@
 #include "linkedList.h"
 #include <stdlib.h> //free
+#include <string.h> //memcpy
 
 
-TODO: fix append prepend logic
+//TODO: fix append prepend logic
 
 struct node_t {
 	void * data;
@@ -17,46 +18,61 @@ struct List_t {
 };
 
 List_T List_new(int elementSize) {
-	struct List_T list = malloc(sizeof(List_t));
+	List_T list = malloc(sizeof(struct List_t));
 	list->size = 0;
 	list->elementSize=0; // TODO: what this used for?
 	list->elementSize = elementSize;
 	return list;
 }
 
-void List_del(List_T list){
-	//free each nodes data
-	//free each node
-	//then free List
+void List_free(List_T list){
+	struct node_t *current; //need pointer to iterate through data structure
+	while(list->head != NULL){
+		/* isolate node from head of list*/
+		current = list->head;
+		list->head = current->next;
+
+		/* frees data from node and node itself */
+		free(current->data); // TODO: will this free everything?
+		free(current);
+	}
 }
 
 void List_prepend(List_T list, void* element){
-	node_t *node = malloc(sizeof(node_t));
-	node->data = malloc(list->elementSize);
-	memcpy(node->data,element,list->elementSize);
-
-	node->next = list->head;
-	list->head = node;
-
-	// first node?
-	if(list->tail==NULL)
-		list->tail = list-> head;
-
-}
-
-void List_append(List_T list, void* element){
-	node_t *node = malloc(sizeof(node_t));
+	struct node_t *node = malloc(sizeof(struct node_t));
 	node->data = malloc(list->elementSize);
 	memcpy(node->data,element,list->elementSize);
 
 	node->next = NULL;
 
+	/* if list empty, ie first node */
+	if(list->head==NULL){
+		list->head = node;
+		list->tail = node;
+	}
+	else{
+		node->next = list->head;
+		list->head = node;
+	}
+}
+
+void List_append(List_T list, void* element){
+	struct node_t *node = malloc(sizeof(struct node_t));
+	node->data = malloc(list->elementSize);
+	memcpy(node->data,element,list->elementSize);
+
+	node->next = NULL;
+
+	/* if list empty, ie first node */
 	if(list->head == NULL){
 		list->head = node;
-		
+		list->tail = node;
 	}
-	list->tail = node;
+	else{
+		list->tail->next = node;
+		list->tail = node;
+	}
+	
 }
 
 
-void push() 

@@ -7,15 +7,15 @@ typedef int (*listIterator)(void *);
 typedef int (*compare)(void *); //this right?
 
 extern List_T List_new(int elementSize); //only creates head node
-extern void List_del(List_T list);
+extern void List_free(List_T list); //frees all allocated memory on list
 
 
-extern void List_prepend(List_T list, void* element);
-extern void List_append(List_T list, void* element);
+extern void List_prepend(List_T list, void* element); // adds element to beginning of list
+extern void List_append(List_T list, void* element); // adds element to end of list
 
-extern void List_remove(List_T list, )
+//extern void List_remove(List_T list, );
 
-extern void List_find(List_T list, (*compare)(void* key), void* key);
+//extern void List_find(List_T list, (*compare)(void* key), void* key);
 
 
 
