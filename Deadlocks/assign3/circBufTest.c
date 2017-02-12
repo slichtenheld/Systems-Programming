@@ -26,8 +26,15 @@ int main(int argc, char * argv[]){
 	struct testStruct tS6 = {6,'F'};
 	Fifo_push(fifo,&tS6);
 
-	for(int i = 0; i < Fifo_size(fifo); i++){
+	while (Fifo_notEmpty(fifo)){
 		struct testStruct *temp = Fifo_pop(fifo);
 		printf("%d%c\n",temp->num,temp->letter);
 	}
+
+	struct testStruct *temp = Fifo_pop(fifo);
+	printf("%d%c\n",temp->num,temp->letter);
+	Fifo_push(fifo,&tS6);
+
+	struct testStruct *temp2 = Fifo_pop(fifo);
+	printf("%d%c\n",temp2->num,temp2->letter);
 }

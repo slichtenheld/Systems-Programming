@@ -28,27 +28,50 @@ void Fifo_del(Fifo_T fifo){
 
 	free(fifo);
 }
-void Fifo_push(Fifo_T fifo, void *item){
+int Fifo_push(Fifo_T fifo, void *item){
 	assert(fifo);
+
+	//check if FULL
+	if(fifo->numItems==fifo->size)
+		return -1;
 
 	fifo->buffer[fifo->in] = item;
 	fifo->in = (fifo->in + 1) % (fifo->size);
 	fifo->numItems++;
+
+	return 1;
 }
 void* Fifo_pop(Fifo_T fifo){
 	assert(fifo);
+
+	/* check if empty */
+	if (fifo->numItems==0)
+		return fifo->buffer[0]; // garbage pointer
 
 	void * temp = fifo->buffer[fifo->out];
 	fifo->out = (fifo->out + 1)% (fifo->size);
 	fifo->numItems--;
 	return temp;
 }
-extern int Fifo_size(Fifo_T fifo){
+int Fifo_size(Fifo_T fifo){
 	assert(fifo);
 
 	return fifo->size;
 }
-extern int Fifo_numItems(Fifo_T fifo){
+
+int Fifo_isEmpty(Fifo_T fifo){
+	return (fifo->numItems==0);
+}
+
+int Fifo_notEmpty(Fifo_T fifo){
+	return !(fifo->numItems==0);
+}
+
+int Fifo_isFull(Fifo_T fifo){
+	return (fifo->numItems==fifo->size);
+}
+
+int Fifo_numItems(Fifo_T fifo){
 	assert(fifo);
 
 	return fifo->numItems;
