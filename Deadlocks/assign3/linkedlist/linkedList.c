@@ -1,9 +1,11 @@
 #include "linkedList.h"
+#include "iterator.h"
 #include <stdlib.h> //free
 #include <string.h> //memcpy
 
 
-//TODO: fix append prepend logic
+//TODO: delete certain nodes
+//TODO: iterator
 
 struct node_t {
 	void * data;
@@ -16,6 +18,11 @@ struct List_t {
 	struct node_t* head;
 	struct node_t* tail;
 };
+
+struct Iter_t {
+	struct node_t * head; // only pointers, don't need to be malloc'd
+	struct node_t *current;
+}
 
 List_T List_new(int elementSize) {
 	List_T list = malloc(sizeof(struct List_t));
@@ -75,4 +82,41 @@ void List_append(List_T list, void* element){
 	
 }
 
+Iter_T List_makeIter(List_T list){
 
+	Iter_T iter = malloc(sizeof(struct Iter_t));
+	iter->head = list->head;
+	iter->current = iter->head;
+
+	return iter;
+}
+
+// struct Iter_t {
+// 	struct node_t * next;
+// }
+
+int Iter_isValid(Iter_T iter){
+	if (iter->current->next==NULL)
+		return 0;
+	else 
+		return 1;
+}
+int Iter_next(Iter_T iter){
+	if (iter->current->next==NULL)
+		return -1;
+
+	iter->current = iter->current->next;
+	return 1;
+}
+void* Iter_currentItem(Iter_T iter){
+	return iter->current->data;
+}
+
+int Iter_rst(Iter_T iter){
+	if (iter->head != NULL) {
+		iter->current = iter->head;
+		return 1;
+	}
+	else
+		return -1;
+}
