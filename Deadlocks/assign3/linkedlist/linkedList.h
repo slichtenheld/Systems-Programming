@@ -3,8 +3,8 @@
 
 typedef struct List_t *List_T;
 
-typedef int (*listIterator)(void *);
-typedef int (*compare)(void *); //this right?
+//typedef int (*listIterator)(void *);
+//typedef int (*compare)(void *); //this right?
 
 extern List_T List_new(int elementSize); //only creates head node
 extern void List_free(List_T list); //frees all allocated memory on list
