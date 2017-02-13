@@ -1,6 +1,9 @@
 #ifndef list_H
 #define list_H
 
+#include "iterator.h"
+
+typedef void (*printFunction)(void *);
 
 typedef struct List_t *List_T;
 
@@ -15,6 +18,8 @@ extern void List_prepend(List_T list, void* element); // adds element to beginni
 extern void List_append(List_T list, void* element); // adds element to end of list
 
 extern Iter_T List_makeIter(List_T list);
+
+extern void List_printAll(List_T list, printFunction printFn);
 
 //extern void List_remove(List_T list, );
 

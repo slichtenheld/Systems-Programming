@@ -1,8 +1,9 @@
-#include "linkedList.h"
+#include "list.h"
 #include "iterator.h"
 #include <stdlib.h> //free
 #include <string.h> //memcpy
-
+#include <assert.h> //assert remove
+#include <stdio.h> //TODO remove
 
 //TODO: delete certain nodes
 //TODO: iterator
@@ -13,27 +14,26 @@ struct node_t {
 };
 
 struct List_t {
-	int size; // TODO: necessary?
 	int elementSize;
-	struct node_t* head;
-	struct node_t* tail;
+	struct node_t* head; // needs to be changed on prepend
+	struct node_t* tail; // needs to be changed on append
+	printFunction printFn;
 };
 
 struct Iter_t {
 	struct node_t * head; // only pointers, don't need to be malloc'd
 	struct node_t *current;
-}
+};
 
 List_T List_new(int elementSize) {
 	List_T list = malloc(sizeof(struct List_t));
-	list->size = 0;
-	list->elementSize=0; // TODO: what this used for?
 	list->elementSize = elementSize;
 	return list;
 }
 
 void List_free(List_T list){
 	struct node_t *current; //need pointer to iterate through data structure
+	
 	while(list->head != NULL){
 		/* isolate node from head of list*/
 		current = list->head;
@@ -79,36 +79,43 @@ void List_append(List_T list, void* element){
 		list->tail->next = node;
 		list->tail = node;
 	}
+}
+
+extern void List_printAll(List_T list, printFunction printFn){
+	struct node_t *current; //need pointer to iterate through data structure
 	
+	current = list->head;
+	while(current->next != NULL){
+		printFn(current->data);
+		current = current->next;
+		/* print data */
+	}
+	printFn(current->data);
 }
 
 Iter_T List_makeIter(List_T list){
 
 	Iter_T iter = malloc(sizeof(struct Iter_t));
+	assert(list->head != NULL);
 	iter->head = list->head;
 	iter->current = iter->head;
 
 	return iter;
 }
 
-// struct Iter_t {
-// 	struct node_t * next;
-// }
-
 int Iter_isValid(Iter_T iter){
-	if (iter->current->next==NULL)
+	if (iter->current==NULL)
 		return 0;
 	else 
 		return 1;
 }
-int Iter_next(Iter_T iter){
-	if (iter->current->next==NULL)
-		return -1;
 
+void Iter_next(Iter_T iter){
 	iter->current = iter->current->next;
-	return 1;
 }
+
 void* Iter_currentItem(Iter_T iter){
+	
 	return iter->current->data;
 }
 
