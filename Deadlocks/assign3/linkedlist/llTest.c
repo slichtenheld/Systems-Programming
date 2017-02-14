@@ -62,4 +62,6 @@ int main( int argc, char * argv[] ) {
 		printf("%d%c\n",temp->num,temp->letter );
 	}
 
+
+	List_free(list);
 }
