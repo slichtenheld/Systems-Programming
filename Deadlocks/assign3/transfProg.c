@@ -3,33 +3,23 @@
 #include <pthread.h>
 #include <string.h>
 #include "circBuf/fifo.h"
+#include "structs.h"
 
 #define FIFOSIZE 5
 
+
 void * workerThread(void* arg){
-	printf("Hello from workerThead\n");
-
+	
+	Fifo_T fifo = (Fifo_T) arg;
 	// check queue
+	while (1){
+		struct transfer *temp = Fifo_pop(fifo);
+		printTransfer(temp);
+		free(temp);
+	}
 }
 
-struct newAcct {
-	int acctNo;
-	int initBalance;
-};
 
-void printNewAcct(struct newAcct* acct){
-	printf("acctNo: %d, initBalance: %d\n",acct->acctNo,acct->initBalance );
-}
-
-struct transfer {
-	int acctNoFrom;
-	int acctNoTo;
-	int amount;
-};
-
-void printTransfer(struct transfer* trans){
-	printf("acctNoFrom: %d, acctNoTo: %d, amount: %d\n",trans->acctNoFrom,trans->acctNoTo,trans->amount );
-}
 int main(int argc, char * argv[]){
 
 	/*** MAKE SURE PROPER INPUTS ***/
@@ -65,28 +55,29 @@ int main(int argc, char * argv[]){
 		perror("error opening file");
 		exit(EXIT_FAILURE);
 	}
+	int counter = 0;
 	/*** READ FILE ***/
 	while ((read = getline(&line, &len, stream)) != -1) { // until EOF
-		printf("%s", line);
+		//printf("%s", line);
 
 		/* PARSE FILE*/
 		char *pch = strtok (line," ");
 		int check = strcmp(pch,"Transfer");
 		if (check!=0) {
 			/* PARSE ACCT INITIALIZATION */
-			printf("ACCT_INIT\n");
+			//printf("ACCT_INIT\n");
 			/* INITIALIZE ACCT */
 			struct newAcct* newAcct_p = malloc(sizeof(struct newAcct));
 			char * endptr;
 			newAcct_p->acctNo = strtol(pch,&endptr,10);
 			pch = strtok (NULL," ");
 			newAcct_p->initBalance = strtol(pch,&endptr,10);
-			printNewAcct(newAcct_p);
+			//printNewAcct(newAcct_p);
 			/* ADD ACCT TO LIST OF ACCTS */
 		}
 		else{
 			/* PARSE TRANSFER */
-			printf("TRANSFER\n");
+			//printf("TRANSFER\n");
 			struct transfer* trans_p = malloc(sizeof(struct transfer));
 			char * endptr;
 			pch = strtok (NULL," ");
@@ -95,11 +86,10 @@ int main(int argc, char * argv[]){
 			trans_p->acctNoTo = strtol(pch,&endptr,10);
 			pch = strtok (NULL," ");
 			trans_p->amount = strtol(pch,&endptr,10);
-			printTransfer(trans_p);
-			/* SEND TRANSFER TO WORKERTHREAD ROUND ROBIN*/
-
+			//printTransfer(trans_p);
+			/* SEND TRANSFER TO WORKERTHREAD (ROUND ROBIN) BY ADDING TO FIFO*/
+			Fifo_push(fifo[counter++%numWorkers],trans_p);
 		}
-	
 		// INITIALIZE ACCT OR ASSIGN TRANSFERS TO WORKERS 
 	}
 
