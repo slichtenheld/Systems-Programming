@@ -4,6 +4,7 @@
 #include <string.h>
 #include "circBuf/fifo.h"
 #include "structs.h"
+#include "linkedlist/list.h"
 
 #define FIFOSIZE 5
 
@@ -14,9 +15,14 @@ void * workerThread(void* arg){
 	// check queue
 	while (1){
 		struct transfer *temp = Fifo_pop(fifo);
+		if (temp->poison){
+			free(temp);
+			break;
+		}
 		printTransfer(temp);
 		free(temp);
 	}
+	pthread_exit(NULL);
 }
 
 
@@ -32,8 +38,10 @@ int main(int argc, char * argv[]){
 	char *endptr;
 	int numWorkers = strtol(argv[2],&endptr,10); // convert string from input to int
 	pthread_t worker_pt[numWorkers];
+	
 	/*** DECLARE EACH WORKER THREAD QUEUE ***/
 	Fifo_T fifo[numWorkers];
+	
 	/*** INSTANTIATE QUEUES AND WORKER THREADS ***/
 	for (int i = 0; i < numWorkers; i++){
 		fifo[i] = Fifo_new(FIFOSIZE);
@@ -42,42 +50,44 @@ int main(int argc, char * argv[]){
 			exit(EXIT_FAILURE);
 		}
 	}
+	
+	/*** INSTANTIATE ACCOUNT ADT ***/
+	List_T list = List_new(sizeof(struct newAcct));
 
+	
 	/*** FILE ARGUMENTS***/
 	char* filename = argv[1];
 	FILE *stream;
 	char *line = NULL;
 	size_t len = 0;
 	ssize_t read;
+	
 	/*** OPEN FILE ***/
 	stream = fopen(filename,"r"); // file only for reading
 	if (stream==NULL){ // exit if wasn't able to read file
 		perror("error opening file");
 		exit(EXIT_FAILURE);
 	}
-	int counter = 0;
+	
+	
 	/*** READ FILE ***/
+	int counter = 0; // used to keep track for round robin
 	while ((read = getline(&line, &len, stream)) != -1) { // until EOF
-		//printf("%s", line);
-
 		/* PARSE FILE*/
 		char *pch = strtok (line," ");
 		int check = strcmp(pch,"Transfer");
-		if (check!=0) {
-			/* PARSE ACCT INITIALIZATION */
-			//printf("ACCT_INIT\n");
+		if (check!=0) { // PARSE ACCT INITIALIZATION
 			/* INITIALIZE ACCT */
 			struct newAcct* newAcct_p = malloc(sizeof(struct newAcct));
 			char * endptr;
 			newAcct_p->acctNo = strtol(pch,&endptr,10);
 			pch = strtok (NULL," ");
 			newAcct_p->initBalance = strtol(pch,&endptr,10);
-			//printNewAcct(newAcct_p);
 			/* ADD ACCT TO LIST OF ACCTS */
+			List_append(list, newAcct_p);
 		}
 		else{
-			/* PARSE TRANSFER */
-			//printf("TRANSFER\n");
+			/* ASSIGN TRANSFERS TO WORKERS */
 			struct transfer* trans_p = malloc(sizeof(struct transfer));
 			char * endptr;
 			pch = strtok (NULL," ");
@@ -86,18 +96,31 @@ int main(int argc, char * argv[]){
 			trans_p->acctNoTo = strtol(pch,&endptr,10);
 			pch = strtok (NULL," ");
 			trans_p->amount = strtol(pch,&endptr,10);
-			//printTransfer(trans_p);
-			/* SEND TRANSFER TO WORKERTHREAD (ROUND ROBIN) BY ADDING TO FIFO*/
+			trans_p->poison = 0;
+			/* SEND TRANSFER TO WORKERTHREAD (ROUND ROBIN) BY ADDING TO FIFO */
 			Fifo_push(fifo[counter++%numWorkers],trans_p);
 		}
-		// INITIALIZE ACCT OR ASSIGN TRANSFERS TO WORKERS 
+		
 	}
-
-
 
 	free(line);
 	fclose(stream);
 
-	pthread_exit(NULL);
+	/*** POISON ALL THREADS ONCE DONE WITH FILE***/
+	for (int i = 0; i < numWorkers; i++){
+		struct transfer* trans_p = malloc(sizeof(struct transfer));
+		trans_p->poison = 1;
+		Fifo_push(fifo[i],trans_p);
+	}
+
+	/*** WAIT FOR ALL THREADS TO TERMINATE ***/
+	for (int i = 0; i < numWorkers; i++)
+		pthread_join(worker_pt[i],NULL);
+
+	/*** PRINT FINAL BALANCES ***/
+	List_printAll(list,printNewAcct);
+
+	/*** CLEANUP ***/
+	List_free(list);
 	exit(EXIT_SUCCESS);
 }

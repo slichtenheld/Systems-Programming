@@ -61,6 +61,17 @@ int main( int argc, char * argv[] ) {
 		temp = Iter_currentItem(iter);
 		printf("%d%c\n",temp->num,temp->letter );
 	}
+	printf("- - - -- -- - - -\n");
+	for(Iter_rst(iter); Iter_isValid(iter); Iter_next(iter)){
+		struct testStruct* temp;
+		temp = Iter_currentItem(iter);
+		if(temp->num == 4)
+			temp->letter = 'Z';
+	}
+
+	printf("______________________\n");
+
+	List_printAll(list,printtestStruct);
 
 
 	List_free(list);

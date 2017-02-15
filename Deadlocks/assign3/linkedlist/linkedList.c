@@ -17,7 +17,6 @@ struct List_t {
 	int elementSize;
 	struct node_t* head; // needs to be changed on prepend
 	struct node_t* tail; // needs to be changed on append
-	printFunction printFn;
 };
 
 struct Iter_t {
@@ -28,6 +27,8 @@ struct Iter_t {
 List_T List_new(int elementSize) {
 	List_T list = malloc(sizeof(struct List_t));
 	list->elementSize = elementSize;
+	list->head = NULL;
+	list->tail = NULL;
 	return list;
 }
 
@@ -81,16 +82,26 @@ void List_append(List_T list, void* element){
 	}
 }
 
-extern void List_printAll(List_T list, printFunction printFn){
+//UNTESTED
+void* List_search(List_T list, void* key,searchFunction searchFn){
 	struct node_t *current; //need pointer to iterate through data structure
 	
 	current = list->head;
-	while(current->next != NULL){
-		printFn(current->data);
+	while(current!= NULL){
+		if (searchFn(current->data, key))
+			return current->data;
 		current = current->next;
-		/* print data */
 	}
-	printFn(current->data);
+}
+
+void List_printAll(List_T list, printFunction printFn){
+	struct node_t *current; //need pointer to iterate through data structure
+	
+	current = list->head;
+	while(current!= NULL){
+		printFn(current->data);		/* print data */
+		current = current->next;
+	}
 }
 
 Iter_T List_makeIter(List_T list){
