@@ -1,14 +1,8 @@
 #ifndef FIFO_H
 #define FIFO_H
 
-/* FIFO */
-/* Notes: pushing and popping when 
-full and empty respectively will not
-affect the underlying buffer. 
-**Pushing when full will return -1. 
-**Popping when full return an old pointer. 
-This decision was made as garbage data 
-is better than segfaults. */
+/* FIFO by Samuel Lichtenheld*/
+
 
 typedef struct Fifo_t *Fifo_T;
 
