@@ -1,20 +1,31 @@
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
+#include <semaphore.h>
+#include "linkedlist/list.h"
 
+#include <stdio.h>
 #include <unistd.h>
 #include <sys/syscall.h>
 #define gettid() syscall(SYS_gettid)
 
-struct newAcct {
-	int acctNo;
-	int initBalance;
+extern List_T list;
+
+struct balance {
+	int currentValue;
+	sem_t m;
 };
 
-void printNewAcct(void *temp){
-	struct newAcct* acct = (struct newAcct*) temp;
-	printf("%d %d\n",acct->acctNo,acct->initBalance );
-}
+struct acct {
+	int acctNo;
+	struct balance b;
+};
+
+
+extern void initAcct (struct acct* a, int acctNo, int balance);
+
+
+extern void printAcct(void *temp);
 
 struct transfer {
 	int acctNoFrom;
@@ -22,8 +33,7 @@ struct transfer {
 	int amount;
 	int poison;
 };
-void printTransfer(struct transfer* trans){
-	printf("%ld: acctNoFrom: %d, acctNoTo: %d, amount: %d\n",gettid(),trans->acctNoFrom,trans->acctNoTo,trans->amount );
-}
+
+extern void printTransfer(struct transfer* trans);
 
 #endif

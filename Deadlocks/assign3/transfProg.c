@@ -5,25 +5,11 @@
 #include "circBuf/fifo.h"
 #include "structs.h"
 #include "linkedlist/list.h"
+#include "workerThread.h"
 
 #define FIFOSIZE 5
 
-
-void * workerThread(void* arg){
-	
-	Fifo_T fifo = (Fifo_T) arg;
-	// check queue
-	while (1){
-		struct transfer *temp = Fifo_pop(fifo);
-		if (temp->poison){
-			free(temp);
-			break;
-		}
-		printTransfer(temp);
-		free(temp);
-	}
-	pthread_exit(NULL);
-}
+List_T list;
 
 
 int main(int argc, char * argv[]){
@@ -45,14 +31,14 @@ int main(int argc, char * argv[]){
 	/*** INSTANTIATE QUEUES AND WORKER THREADS ***/
 	for (int i = 0; i < numWorkers; i++){
 		fifo[i] = Fifo_new(FIFOSIZE);
-		if ( pthread_create( &worker_pt[i],NULL,workerThread,(void*)fifo[i] ) ) { // TODO: pass appropriate queue to each workerThread
+		if ( pthread_create( &worker_pt[i],NULL,workerThread,(void*)fifo[i] ) ) { // pass appropriate queue to each workerThread
 			perror("error creating consumer thread");
 			exit(EXIT_FAILURE);
 		}
 	}
 	
 	/*** INSTANTIATE ACCOUNT ADT ***/
-	List_T list = List_new(sizeof(struct newAcct));
+	list = List_new(sizeof(struct acct));
 
 	
 	/*** FILE ARGUMENTS***/
@@ -78,13 +64,14 @@ int main(int argc, char * argv[]){
 		int check = strcmp(pch,"Transfer");
 		if (check!=0) { // PARSE ACCT INITIALIZATION
 			/* INITIALIZE ACCT */
-			struct newAcct* newAcct_p = malloc(sizeof(struct newAcct));
+			struct acct* acct_p = malloc(sizeof(struct acct));
 			char * endptr;
-			newAcct_p->acctNo = strtol(pch,&endptr,10);
+			int acctNo = strtol(pch,&endptr,10);
 			pch = strtok (NULL," ");
-			newAcct_p->initBalance = strtol(pch,&endptr,10);
+			int initBalance = strtol(pch,&endptr,10);
+			initAcct(acct_p,acctNo,initBalance);
 			/* ADD ACCT TO LIST OF ACCTS */
-			List_append(list, newAcct_p);
+			List_append(list, acct_p);
 		}
 		else{
 			/* ASSIGN TRANSFERS TO WORKERS */
@@ -118,7 +105,7 @@ int main(int argc, char * argv[]){
 		pthread_join(worker_pt[i],NULL);
 
 	/*** PRINT FINAL BALANCES ***/
-	List_printAll(list,printNewAcct);
+	List_printAll(list,printAcct);
 
 	/*** CLEANUP ***/
 	List_free(list);

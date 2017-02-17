@@ -1,7 +1,7 @@
 CC = gcc
 
-OBJECTS = circBuf.o linkedList.o transfProg.o 
-DEPS = circBuf/fifo.h linkedlist/list.h structs.h
+OBJECTS = circBuf.o linkedList.o transfProg.o workerThread.o structs.o
+DEPS = circBuf/fifo.h linkedlist/list.h structs.h workerThread.h
 
 all: transfProg
 
@@ -19,6 +19,12 @@ circBuf.o : circBuf/circBuf.c circBuf/fifo.h
 
 linkedList.o : linkedlist/linkedList.c linkedlist/list.h
 	$(CC) -c linkedlist/linkedList.c
+
+workerThread.o : workerThread.c workerThread.h
+	$(CC) -c workerThread.c
+
+structs.o : structs.c structs.h
+	$(CC) -c structs.c
 	
 clean: 
 	rm transfProg Lichtenheld_Samuel_Assignment3.zip *.o
