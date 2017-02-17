@@ -24,11 +24,21 @@ int main (int argc, char * argv[]){
 
 	FILE *fp = fopen(fileName,"w");
 
-	for (int i = 0; i < numAccts; i++){
+	for (int i = 1; i <= numAccts; i++){
 		char* accountTxt;
 		asprintf(&accountTxt,"%d %d\n",i,randinrange(0,1000));
-		printf("%s\n",accountTxt );
-		//fputs(accountTxt,fp);
+		//printf("%s",accountTxt );
+		fputs(accountTxt,fp);
+	}
+	for (int i = 0; i< numTrans; i++){
+		char* transferTxt;
+		int acctTo =  randinrange(0,numAccts); //will never be zero idk why
+		int acctFrom = randinrange(0,numAccts);
+		while(acctTo==acctFrom)
+			acctFrom = randinrange(0,numAccts);
+		asprintf(&transferTxt,"Transfer %d %d %d\n", acctTo, acctFrom, randinrange(0,10000));
+		//printf("%s",transferTxt );
+		fputs(transferTxt,fp);
 	}
 
 }
