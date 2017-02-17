@@ -13,7 +13,9 @@ transfProg: $(OBJECTS)
 	$(CC) $(CFLAGS) -o transfProg $(OBJECTS) -pthread
 
 zip:
-	zip Lichtenheld_Samuel_Assignment3.zip *.c *.h Makefile *.txt inputGenerator/inputGenerator.c inputGenerator/*.txt
+	zip Lichtenheld_Samuel_Assignment3.zip *.c *.h Makefile *.txt \
+	inputGenerator/inputGenerator.c inputGenerator/*.txt \
+	circBuf/* linkedlist/*
 
 transfProg.o : transfProg.c $(DEPS)
 	$(CC) $(CFLAGS) -c transfProg.c

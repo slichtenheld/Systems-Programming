@@ -83,16 +83,16 @@ void List_append(List_T list, void* element){
 }
 
 //UNTESTED
-void* List_search(List_T list, void* key,searchFunction searchFn){
-	struct node_t *current; //need pointer to iterate through data structure
+// void* List_search(List_T list, void* key,searchFunction searchFn){
+// 	struct node_t *current; //need pointer to iterate through data structure
 	
-	current = list->head;
-	while(current!= NULL){
-		if (searchFn(current->data, key))
-			return current->data;
-		current = current->next;
-	}
-}
+// 	current = list->head;
+// 	while(current!= NULL){
+// 		if (searchFn(current->data, key))
+// 			return current->data;
+// 		current = current->next;
+// 	}
+// }
 
 void List_printAll(List_T list, printFunction printFn){
 	struct node_t *current; //need pointer to iterate through data structure
