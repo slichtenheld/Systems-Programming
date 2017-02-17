@@ -2,12 +2,13 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
+#include <time.h>
 #include "circBuf/fifo.h"
 #include "structs.h"
 #include "linkedlist/list.h"
 #include "workerThread.h"
 
-#define FIFOSIZE 5
+#define FIFOSIZE 10
 
 List_T list;
 
@@ -55,7 +56,9 @@ int main(int argc, char * argv[]){
 		exit(EXIT_FAILURE);
 	}
 	
-	
+	/*** START RECORDING TIME ***/
+	// clock_t begin = clock();
+
 	/*** READ FILE ***/
 	int counter = 0; // used to keep track for round robin
 	while ((read = getline(&line, &len, stream)) != -1) { // until EOF
@@ -104,8 +107,14 @@ int main(int argc, char * argv[]){
 	for (int i = 0; i < numWorkers; i++)
 		pthread_join(worker_pt[i],NULL);
 
+	/*** END TIMER ***/
+	// clock_t end = clock();
+
 	/*** PRINT FINAL BALANCES ***/
 	List_printAll(list,printAcct);
+
+	// double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+	//printf("%f seconds\n", time_spent);
 
 	/*** CLEANUP ***/
 	List_free(list);
