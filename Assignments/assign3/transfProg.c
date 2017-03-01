@@ -55,12 +55,15 @@ int main(int argc, char * argv[]){
 		exit(EXIT_FAILURE);
 	}
 	
+	clock_t begin = clock();
 	
 	/*** READ FILE ***/
 	int counter = 0; // used to keep track for round robin
 	while ((read = getline(&line, &len, stream)) != -1) { // until EOF
 		/* PARSE FILE*/
-		char *pch = strtok (line," ");
+		char *temp = malloc(read);
+		memcpy(temp,line,read);
+		char *pch = strtok (line," "); 
 		int check = strcmp(pch,"Transfer");
 		if (check!=0) { // PARSE ACCT INITIALIZATION
 			/* INITIALIZE ACCT */
@@ -72,20 +75,10 @@ int main(int argc, char * argv[]){
 			initAcct(acct_p,acctNo,initBalance);
 			/* ADD ACCT TO LIST OF ACCTS */
 			List_append(list, acct_p);
+			free(temp);
 		}
 		else{
-			/* ASSIGN TRANSFERS TO WORKERS */
-			struct transfer* trans_p = malloc(sizeof(struct transfer));
-			char * endptr;
-			pch = strtok (NULL," ");
-			trans_p->acctNoFrom = strtol(pch,&endptr,10);
-			pch = strtok (NULL," ");
-			trans_p->acctNoTo = strtol(pch,&endptr,10);
-			pch = strtok (NULL," ");
-			trans_p->amount = strtol(pch,&endptr,10);
-			trans_p->poison = 0;
-			/* SEND TRANSFER TO WORKERTHREAD (ROUND ROBIN) BY ADDING TO FIFO */
-			Fifo_push(fifo[counter++%numWorkers],trans_p);
+			Fifo_push(fifo[counter++%numWorkers],temp);
 		}
 		
 	}
@@ -94,19 +87,28 @@ int main(int argc, char * argv[]){
 	fclose(stream);
 
 	/*** POISON ALL THREADS ONCE DONE WITH FILE***/
+	int s = sizeof("POISON ");
 	for (int i = 0; i < numWorkers; i++){
-		struct transfer* trans_p = malloc(sizeof(struct transfer));
-		trans_p->poison = 1;
-		Fifo_push(fifo[i],trans_p);
+		char *temp2 = malloc(s);
+		char temp3[] = "POISON ";
+		memcpy(temp2, temp3, s);
+		//printf("%s\n", pch2);
+		//struct transfer* trans_p = malloc(sizeof(struct transfer));
+		//trans_p->poison = 1;
+		Fifo_push(fifo[i],temp2);
 	}
 
 	/*** WAIT FOR ALL THREADS TO TERMINATE ***/
 	for (int i = 0; i < numWorkers; i++)
 		pthread_join(worker_pt[i],NULL);
 
+	clock_t end = clock();
+
 	/*** PRINT FINAL BALANCES ***/
 	List_printAll(list,printAcct);
 
+	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+	printf("TIME SPENT: %f\n",time_spent);
 	/*** CLEANUP ***/
 	List_free(list);
 	exit(EXIT_SUCCESS);
