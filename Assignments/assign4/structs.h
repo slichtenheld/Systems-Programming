@@ -6,8 +6,10 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include <sys/syscall.h>
-#define gettid() syscall(SYS_gettid)
+//#include <sys/syscall.h>
+//#define gettid() syscall(SYS_getpid)
+#include <sys/types.h>
+//#include <unistd.h>
 
 //extern List_T list;
 
@@ -22,16 +24,10 @@ struct acct {
 };
 
 
-extern void initAcct (struct acct* a, int acctNo, int balance){
-	a->acctNo = acctNo;
-	a->b.currentValue = balance;
-	sem_init(&(a->b.m),0,1); // initialized to 1 for mutual exclusion
-}
+extern void initAcct (struct acct* a, int acctNo, int balance);
 
-extern void printAcct(void *temp){
-	struct acct* acct = (struct acct*) temp;
-	printf("%d %d\n",acct->acctNo,acct->b.currentValue );
-}
+
+extern void printAcct(void *temp);
 
 struct transfer {
 	int acctNoFrom;
@@ -40,8 +36,6 @@ struct transfer {
 	int poison;
 };
 
-extern void printTransfer(struct transfer* trans){
-	printf("%ld: acctNoFrom: %d, acctNoTo: %d, amount: %d\n",gettid(),trans->acctNoFrom,trans->acctNoTo,trans->amount );
-}
+extern void printTransfer(struct transfer* trans);
 
 #endif

@@ -1,0 +1,55 @@
+1 160
+2 606
+3 217
+4 202
+5 89
+Transfer 5 4 2318
+Transfer 4 3 5227
+Transfer 2 4 4866
+Transfer 1 2 2828
+Transfer 5 2 9837
+Transfer 4 5 1959
+Transfer 5 3 8703
+Transfer 5 1 7818
+Transfer 3 1 3874
+Transfer 4 2 4758
+Transfer 3 1 7075
+Transfer 2 3 2301
+Transfer 3 1 7167
+Transfer 4 1 810
+Transfer 5 1 4741
+Transfer 5 2 1098
+Transfer 4 5 9800
+Transfer 3 5 7618
+Transfer 1 4 4603
+Transfer 4 2 4875
+Transfer 2 3 9608
+Transfer 3 1 692
+Transfer 2 4 2615
+Transfer 2 4 3122
+Transfer 5 3 1200
+Transfer 1 4 7711
+Transfer 1 4 3134
+Transfer 1 3 3427
+Transfer 1 3 761
+Transfer 4 1 3158
+Transfer 1 3 7842
+Transfer 1 5 1190
+Transfer 2 3 3805
+Transfer 4 2 6926
+Transfer 3 4 8125
+Transfer 4 3 5835
+Transfer 5 1 8969
+Transfer 5 3 2396
+Transfer 1 2 6169
+Transfer 2 4 7059
+Transfer 4 3 7556
+Transfer 5 2 8746
+Transfer 2 5 2550
+Transfer 5 1 9475
+Transfer 3 5 7600
+Transfer 2 1 3606
+Transfer 2 5 8651
+Transfer 3 5 9301
+Transfer 4 3 1804
+Transfer 3 2 9481

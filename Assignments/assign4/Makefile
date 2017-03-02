@@ -1,15 +1,15 @@
 
 CC = gcc
 
-OBJECTS = transfProg.o
-DEPS = macros.h structs.h
+OBJECTS = transfProg.o circBuf.o structs.o
+DEPS = macros.h structs.h circBuf/fifo.h structs.h
 
 all: transfProg
 
 debug:	CC += -DDEBUG
 debug:	transfProg
 
-transfProg : $(DEPS) $(OBJECTS)
+transfProg : $(OBJECTS)
 	$(CC) -o transfProg $(OBJECTS) -pthread
 
 zip:
@@ -23,17 +23,11 @@ rmzip:
 transfProg.o : transfProg.c $(DEPS)
 	$(CC) -c transfProg.c
 
-# main.o : main.c $(DEPS)
-# 	$(CC) -c main.c
+circBuf.o : circBuf/circBuf.c circBuf/fifo.h
+	$(CC) -c circBuf/circBuf.c
 
-# calThread.o : calThread.c $(DEPS)
-# 	$(CC) -c calThread.c
-
-# emailThread.o : emailThread.c $(DEPS)
-# 	$(CC) -c emailThread.c
-
-# calendarADT.o : calendarADT.c $(DEPS)
-# 	$(CC) -c calendarADT.c
+structs.o : structs.c structs.h
+	$(CC) -c structs.c
 
 clean:
 	rm transfProg $(OBJECTS)
